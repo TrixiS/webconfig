@@ -1,5 +1,5 @@
 import * as React from "react";
-import Page, { PageProps } from "../components/Page";
+import Page, { PageProps } from "./Page";
 import { ConfigProperty } from "../lib/configTypes";
 import {
   useForm,

@@ -1,7 +1,7 @@
 import React from "react";
 import Page from "./components/Page";
 import useFetcher from "./lib/useFetcher";
-import SchemaPage from "./pages/SchemaPage";
+import SchemaPage from "./components/SchemaPage";
 import { Switch, Route } from "react-router-dom";
 import { ConfigSchema } from "./lib/configTypes";
 import { Sidebar, Header, Content, SidebarLink } from "./components/Layout";
