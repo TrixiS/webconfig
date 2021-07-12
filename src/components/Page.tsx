@@ -5,7 +5,7 @@ export function PageTitle({
   ...rest
 }: React.HTMLAttributes<HTMLHeadingElement>) {
   return (
-    <h1 className="text-3xl text-gray-800 font-bold mb-4" {...rest}>
+    <h1 className="text-3xl text-gray-800 font-bold mb-2 lg:mb-4" {...rest}>
       {children}
     </h1>
   );

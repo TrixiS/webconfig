@@ -1,13 +1,15 @@
 import React from "react";
 import Page from "./components/Page";
 import useFetcher from "./lib/useFetcher";
+import SchemaPage from "./pages/SchemaPage";
+import { Switch, Route } from "react-router-dom";
 import { ConfigSchema } from "./lib/configTypes";
 import { Sidebar, Header, Content, SidebarLink } from "./components/Layout";
 import { logo, configIcon, phrasesIcon } from "./icons";
 
 export const apiUrl = "http://localhost:5000";
 
-const icons: Record<string, JSX.Element> = {
+const pageIcons: Record<string, JSX.Element> = {
   config: configIcon,
   phrases: phrasesIcon,
 };
@@ -16,6 +18,9 @@ export default function App() {
   const { data: configSchema } = useFetcher<ConfigSchema>(`${apiUrl}/schema`);
 
   // TODO: make loading screen (red logo pulse)
+  // TODO: компонент, который выплевывает импуты при получении объекта из пропов
+  //       и возвращает объект с данными
+  // TODO: add desc to the pages (Config and the desc below)
   if (!configSchema) return <>Loading...</>;
   else console.log(configSchema);
 
@@ -41,7 +46,7 @@ export default function App() {
           const [name, property] = entry;
 
           return (
-            <SidebarLink to={`/${name}`} icon={icons[name]} key={index}>
+            <SidebarLink to={`/${name}`} icon={pageIcons[name]} key={index}>
               {property.title}
             </SidebarLink>
           );
@@ -51,8 +56,31 @@ export default function App() {
       <div className="flex flex-col w-10/12 h-full">
         <Header className="shadow z-10" />
         <Content>
-          {/* Routes here */}
-          <Page title="Dashboard">Some cool test content</Page>
+          <Switch>
+            {Object.entries(configSchema.properties).map((entry, index) => {
+              const [name, property] = entry;
+              const nameCapital = name.charAt(0).toUpperCase() + name.slice(1);
+
+              // TODO: you probably have to parse it from the actual config
+              const schema = configSchema.definitions[nameCapital].properties;
+
+              return (
+                <Route path={`/${name}`} key={index}>
+                  <SchemaPage
+                    className="flex flex-col max-w-5xl"
+                    formProps={{ className: "flex flex-col gap-y-4" }}
+                    title={property.title}
+                    schema={schema}
+                    key={index}
+                  >
+                    <button className="float-right" type="submit">
+                      Save
+                    </button>
+                  </SchemaPage>
+                </Route>
+              );
+            })}
+          </Switch>
         </Content>
       </div>
     </div>
