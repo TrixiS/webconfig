@@ -7,26 +7,15 @@ import {
   useFieldArray,
   UseFieldArrayProps,
   UseFormRegister,
+  Controller,
 } from "react-hook-form";
 import { removeIcon, plusIcon, arrowRightIcon } from "../icons";
+import DictInput from "./DictInput";
 
 const plainInputTypes: Record<string, string> = {
   string: "text",
   integer: "number",
   number: "number",
-};
-
-const transformData = (data: Record<string, Array<any> | any>) => {
-  const dataCopy = { ...data };
-
-  for (const [key, value] of Object.entries(dataCopy)) {
-    if (!Array.isArray(value) || !value.every(Array.isArray)) continue;
-    const object: Record<any, any> = {};
-    for (const array of value) object[array[0]] = array[1];
-    dataCopy[key] = object;
-  }
-
-  return dataCopy;
 };
 
 export function Field({
@@ -105,37 +94,23 @@ export function ArrayField({
 
 export function ObjectField({
   useFieldArrayProps,
-  register,
   schemaProperty: property,
   removeButtonProps,
   appendButtonProps,
   ...rest
 }: ArrayFieldProps) {
-  const { fields, append, remove } = useFieldArray(useFieldArrayProps);
-
   return (
     <Field {...rest}>
-      {fields.map((field, fieldIndex) => (
-        <RemoveButton
-          {...removeButtonProps}
-          remove={() => remove(fieldIndex)}
-          key={field.id}
-        >
-          <Input
-            type="text"
-            {...register(`${useFieldArrayProps.name}[${fieldIndex}][0]`, {
-              required: true,
-            })}
+      <Controller
+        {...useFieldArrayProps}
+        render={({ field }) => (
+          <DictInput
+            {...field}
+            removeButtonProps={removeButtonProps}
+            appendButtonProps={appendButtonProps}
           />
-          <span className="text-gray-500 self-center">{arrowRightIcon}</span>
-          <Input
-            {...register(`${useFieldArrayProps.name}[${fieldIndex}][1]`, {
-              required: true,
-            })}
-          />
-        </RemoveButton>
-      ))}
-      <AppendButton {...appendButtonProps} append={() => append(Array(2))} />
+        )}
+      />
     </Field>
   );
 }
@@ -162,7 +137,7 @@ export default function SchemaPage({
   const { control, register, handleSubmit } = useForm();
 
   const handleData = (data: Record<string, any>) => {
-    console.log(transformData(data));
+    console.log(data);
   };
 
   // TODO1: send request to modify config
@@ -217,19 +192,19 @@ export interface SchemaPageProps extends PageProps {
   formProps?: Record<string, any>;
 }
 
-interface ButtonProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface ButtonProps extends React.HTMLAttributes<HTMLDivElement> {
   buttonClassName?: string;
 }
 
-interface RemoveButtonProps extends ButtonProps {
+export interface RemoveButtonProps extends ButtonProps {
   remove: (...args: any) => any;
 }
 
-interface AppendButtonProps extends ButtonProps {
+export interface AppendButtonProps extends ButtonProps {
   append: (...args: any) => any;
 }
 
-interface ArrayFieldProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface ArrayFieldProps extends React.HTMLAttributes<HTMLDivElement> {
   useFieldArrayProps: UseFieldArrayProps;
   register: UseFormRegister<Record<string, string>>;
   schemaProperty: SchemaProperty;
