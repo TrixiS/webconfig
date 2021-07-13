@@ -16,17 +16,11 @@ const plainInputTypes: Record<string, string> = {
   number: "number",
 };
 
-const transformData = (data: Record<string, any>) => {
+const transformData = (data: Record<string, Array<any> | any>) => {
   const dataCopy = { ...data };
 
   for (const [key, value] of Object.entries(dataCopy)) {
-    if (
-      typeof value !== "object" ||
-      value[0] === undefined ||
-      value[0].length < 2
-    )
-      continue;
-
+    if (!Array.isArray(value) || !value.every(Array.isArray)) continue;
     const object: Record<any, any> = {};
     for (const array of value) object[array[0]] = array[1];
     dataCopy[key] = object;
