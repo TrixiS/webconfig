@@ -2,10 +2,11 @@ import React from "react";
 import Page from "./components/Page";
 import useFetcher from "./lib/useFetcher";
 import SchemaPage from "./components/SchemaPage";
+import Button from "./components/Button";
 import { Switch, Route } from "react-router-dom";
 import { ConfigSchema } from "./lib/configTypes";
 import { Sidebar, Header, Content, SidebarLink } from "./components/Layout";
-import { logo, configIcon, phrasesIcon } from "./icons";
+import { logo, configIcon, phrasesIcon, circleIcon } from "./icons";
 
 export const apiUrl = "http://localhost:5000";
 
@@ -73,9 +74,13 @@ export default function App() {
                     schema={schema}
                     key={index}
                   >
-                    <button className="float-right" type="submit">
+                    <Button
+                      className="float-right"
+                      type="submit"
+                      // icon={<span className="text-red-400">{circleIcon}</span>}
+                    >
                       Save
-                    </button>
+                    </Button>
                   </SchemaPage>
                 </Route>
               );

@@ -12,7 +12,7 @@ function SidebarHideItem({ icon, children }: SidebarItemProps) {
 
 export function SidebarItem({ icon, children, ...rest }: SidebarItemProps) {
   return (
-    <li className="flex flex-col h-10 hover:bg-gray-200 rounded text-base font-semibold text-gray-700">
+    <li className="flex flex-col h-10 hover:bg-gray-200 rounded-lg text-base font-semibold text-gray-700">
       <div className="inline-flex h-full m-2 gap-x-2 self-center sm:self-start sm:items-start">
         <SidebarHideItem icon={icon}>{children}</SidebarHideItem>
       </div>

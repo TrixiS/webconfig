@@ -202,7 +202,7 @@ export default function SchemaPage({
                 buttonClassName: "text-gray-500 hover:text-red-500",
               }}
               appendButtonProps={{
-                buttonClassName: "text-gray-500 hover:bg-gray-200 rounded",
+                buttonClassName: "text-gray-500 hover:bg-gray-200 rounded-lg",
               }}
               key={index}
             />

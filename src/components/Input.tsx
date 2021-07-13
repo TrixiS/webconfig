@@ -7,7 +7,7 @@ export default function Input({
   return (
     <input
       className={
-        "rounded-lg border border-gray-200 py-1 px-2 focus:outline-none focus:border-gray-400 break-words"
+        "rounded-lg border border-gray-200 py-1 px-2 focus:outline-none focus:border-gray-400"
       }
       {...rest}
     />
