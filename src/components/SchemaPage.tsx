@@ -4,11 +4,10 @@ import { ConfigProperty } from "../lib/configTypes";
 import {
   useForm,
   useFieldArray,
-  Controller,
   UseFieldArrayProps,
   UseFormRegister,
 } from "react-hook-form";
-import { removeIcon, plusIcon } from "../icons";
+import { removeIcon, plusIcon, arrowRightIcon } from "../icons";
 
 const plainInputTypes: Record<string, string> = {
   string: "text",
@@ -16,9 +15,24 @@ const plainInputTypes: Record<string, string> = {
   number: "number",
 };
 
-function ObjectField() {
-  return null;
-}
+const transformData = (data: Record<string, any>) => {
+  const dataCopy = { ...data };
+
+  for (const [key, value] of Object.entries(dataCopy)) {
+    if (
+      typeof value !== "object" ||
+      value[0] === undefined ||
+      value[0].length < 2
+    )
+      continue;
+
+    const object: Record<any, any> = {};
+    for (const array of value) object[array[0]] = array[1];
+    dataCopy[key] = object;
+  }
+
+  return dataCopy;
+};
 
 export function Field({
   title,
@@ -33,12 +47,42 @@ export function Field({
   );
 }
 
+export function RemoveButton({
+  remove,
+  buttonClassName,
+  children,
+  ...rest
+}: RemoveButtonProps) {
+  return (
+    <div className="inline-flex gap-x-1" {...rest}>
+      {children}
+      <button className={buttonClassName} type="button" onClick={remove}>
+        {removeIcon}
+      </button>
+    </div>
+  );
+}
+
+export function AppendButton({
+  buttonClassName,
+  append,
+  ...rest
+}: AppendButtonProps) {
+  return (
+    <div {...rest}>
+      <button className={buttonClassName} type="button" onClick={append}>
+        {plusIcon}
+      </button>
+    </div>
+  );
+}
+
 export function ArrayField({
   useFieldArrayProps,
   register,
   schemaProperty: property,
-  addButtonClassName,
-  removeButtonClassName,
+  appendButtonProps,
+  removeButtonProps,
   ...rest
 }: ArrayFieldProps) {
   // TODO: grab data from property and push it to the fields
@@ -47,32 +91,70 @@ export function ArrayField({
   return (
     <Field {...rest}>
       {fields.map((field, fieldIndex) => (
-        <div className="flex flex-row gap-x-1" key={field.id}>
+        <RemoveButton
+          {...removeButtonProps}
+          remove={() => remove(fieldIndex)}
+          key={field.id}
+        >
           <input
             {...register(`${useFieldArrayProps.name}[${fieldIndex}]`, {
               required: true,
             })}
           />
-          <button
-            className={removeButtonClassName}
-            type="button"
-            onClick={() => remove(fieldIndex)}
-          >
-            {removeIcon}
-          </button>
-        </div>
+        </RemoveButton>
       ))}
-      <div>
-        <button
-          className={addButtonClassName}
-          type="button"
-          onClick={() => append("")}
-        >
-          {plusIcon}
-        </button>
-      </div>
+      <AppendButton {...appendButtonProps} append={() => append("")} />
     </Field>
   );
+}
+
+export function ObjectField({
+  useFieldArrayProps,
+  register,
+  schemaProperty: property,
+  removeButtonProps,
+  appendButtonProps,
+  ...rest
+}: ArrayFieldProps) {
+  const { fields, append, remove } = useFieldArray(useFieldArrayProps);
+
+  return (
+    <Field {...rest}>
+      {fields.map((field, fieldIndex) => (
+        <RemoveButton
+          {...removeButtonProps}
+          remove={() => remove(fieldIndex)}
+          key={field.id}
+        >
+          <input
+            {...register(`${useFieldArrayProps.name}[${fieldIndex}][0]`, {
+              required: true,
+            })}
+          />
+          <span className="text-gray-500">{arrowRightIcon}</span>
+          <input
+            {...register(`${useFieldArrayProps.name}[${fieldIndex}][1]`, {
+              required: true,
+            })}
+          />
+        </RemoveButton>
+      ))}
+      <AppendButton {...appendButtonProps} append={() => append(Array(2))} />
+    </Field>
+  );
+}
+
+export function NestedObjectField({
+  schemaProperty,
+  ...rest
+}: ArrayFieldProps) {
+  if (schemaProperty.type === "array")
+    return <ArrayField schemaProperty={schemaProperty} {...rest} />;
+
+  if (schemaProperty.type === "object")
+    return <ObjectField schemaProperty={schemaProperty} {...rest} />;
+
+  return null;
 }
 
 export default function SchemaPage({
@@ -81,10 +163,14 @@ export default function SchemaPage({
   children,
   ...rest
 }: SchemaPageProps) {
-  // TODO: decide how to convert list to object
-  // TODO: make inteface from object (?)
   const { control, register, handleSubmit } = useForm();
-  const handleData = (data: any) => console.log(data);
+
+  const handleData = (data: Record<string, any>) => {
+    console.log(transformData(data));
+  };
+
+  // TODO1: send request to modify config
+  // TODO2: fill up fields with actual data
 
   return (
     <Page {...rest}>
@@ -99,25 +185,27 @@ export default function SchemaPage({
                   type={plainInputTypes[property.type]}
                   placeholder={property.default}
                   {...register(name, { required: !property.default })}
+                  key={index}
                 />
               </Field>
             );
 
-          if (property.type === "array")
-            return (
-              <ArrayField
-                title={property.title}
-                useFieldArrayProps={{ control, name }}
-                register={register}
-                schemaProperty={property}
-                addButtonClassName="text-gray-500 hover:bg-gray-200 rounded"
-                removeButtonClassName="text-gray-500 hover:text-red-500"
-              />
-            );
-
-          return <ObjectField />;
+          return (
+            <NestedObjectField
+              title={property.title}
+              useFieldArrayProps={{ control, name }}
+              register={register}
+              schemaProperty={property}
+              removeButtonProps={{
+                buttonClassName: "text-gray-500 hover:text-red-500",
+              }}
+              appendButtonProps={{
+                buttonClassName: "text-gray-500 hover:bg-gray-200 rounded",
+              }}
+              key={index}
+            />
+          );
         })}
-
         <div>{children}</div>
       </form>
     </Page>
@@ -133,10 +221,22 @@ export interface SchemaPageProps extends PageProps {
   formProps?: Record<string, any>;
 }
 
+interface ButtonProps extends React.HTMLAttributes<HTMLDivElement> {
+  buttonClassName?: string;
+}
+
+interface RemoveButtonProps extends ButtonProps {
+  remove: (...args: any) => any;
+}
+
+interface AppendButtonProps extends ButtonProps {
+  append: (...args: any) => any;
+}
+
 interface ArrayFieldProps extends React.HTMLAttributes<HTMLDivElement> {
   useFieldArrayProps: UseFieldArrayProps;
   register: UseFormRegister<Record<string, string>>;
   schemaProperty: SchemaProperty;
-  addButtonClassName?: string;
-  removeButtonClassName?: string;
+  removeButtonProps: ButtonProps;
+  appendButtonProps: ButtonProps;
 }
