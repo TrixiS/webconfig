@@ -1,4 +1,5 @@
 import * as React from "react";
+import Input from "../components/Input";
 import Page, { PageProps } from "./Page";
 import { ConfigProperty } from "../lib/configTypes";
 import {
@@ -41,7 +42,7 @@ export function Field({
 }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div className="flex flex-col gap-y-1" {...rest}>
-      <h3 className="text-xl font-semibold">{title}</h3>
+      <h3 className="text-lg font-semibold text-gray-700">{title}</h3>
       {children}
     </div>
   );
@@ -96,7 +97,7 @@ export function ArrayField({
           remove={() => remove(fieldIndex)}
           key={field.id}
         >
-          <input
+          <Input
             {...register(`${useFieldArrayProps.name}[${fieldIndex}]`, {
               required: true,
             })}
@@ -126,13 +127,14 @@ export function ObjectField({
           remove={() => remove(fieldIndex)}
           key={field.id}
         >
-          <input
+          <Input
+            type="text"
             {...register(`${useFieldArrayProps.name}[${fieldIndex}][0]`, {
               required: true,
             })}
           />
-          <span className="text-gray-500">{arrowRightIcon}</span>
-          <input
+          <span className="text-gray-500 self-center">{arrowRightIcon}</span>
+          <Input
             {...register(`${useFieldArrayProps.name}[${fieldIndex}][1]`, {
               required: true,
             })}
@@ -181,7 +183,7 @@ export default function SchemaPage({
           if (property.type in plainInputTypes)
             return (
               <Field title={property.title}>
-                <input
+                <Input
                   type={plainInputTypes[property.type]}
                   placeholder={property.default}
                   {...register(name, { required: !property.default })}

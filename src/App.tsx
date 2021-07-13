@@ -67,7 +67,7 @@ export default function App() {
               return (
                 <Route path={`/${name}`} key={index}>
                   <SchemaPage
-                    className="flex flex-col max-w-5xl"
+                    className="flex flex-col max-w-2xl"
                     formProps={{ className: "flex flex-col gap-y-4" }}
                     title={property.title}
                     schema={schema}
