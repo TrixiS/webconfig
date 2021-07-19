@@ -1,7 +1,7 @@
 import React from "react";
 import Page from "./components/Page";
 import useFetcher from "./lib/useFetcher";
-import SchemaPage from "./components/SchemaPage";
+import SchemaPage, { SchemaProperty } from "./components/SchemaPage";
 import Button from "./components/Button";
 import { Switch, Route } from "react-router-dom";
 import { ConfigSchema } from "./lib/configTypes";
@@ -17,30 +17,20 @@ const pageIcons: Record<string, JSX.Element> = {
 
 export default function App() {
   const { data: configSchema } = useFetcher<ConfigSchema>(`${apiUrl}/schema`);
+  const { data: configData, mutate: mutateConfigData } = useFetcher<
+    Record<string, any>
+  >(`${apiUrl}/config`);
+  const { data: phrasesData, mutate: mutatePhrasesData } = useFetcher<
+    Record<string, string>
+  >(`${apiUrl}/phrases`);
 
   // TODO: make loading screen (red logo pulse)
   // TODO: компонент, который выплевывает импуты при получении объекта из пропов
   //       и возвращает объект с данными
   // TODO: add desc to the pages (Config and the desc below)
-  if (!configSchema) return <>Loading...</>;
-  else console.log(configSchema);
+  if (!configSchema || !configData || !phrasesData) return <>Loading...</>;
 
   return (
-    /*
-        TODO: left side menu
-              create config page
-              start bot button
-              started indicator
-
-        Sidebar (Pages) | Start bot button (float right) with indicator in the button
-        Config
-        Phrases
-
-        Run the bot first and get the channels/roles
-
-        Take phrases translate text from json
-        TODO: SidebarLink
-      */
     <div className="App flex flex-row w-full h-screen">
       <Sidebar className="w-2/12 h-screen border-r border-gray-200" icon={logo}>
         {Object.entries(configSchema.properties).map((entry, index) => {
@@ -61,9 +51,27 @@ export default function App() {
             {Object.entries(configSchema.properties).map((entry, index) => {
               const [name, property] = entry;
               const nameCapital = name.charAt(0).toUpperCase() + name.slice(1);
-
-              // TODO: you probably have to parse it from the actual config
               const schema = configSchema.definitions[nameCapital].properties;
+              const data = nameCapital === "Config" ? configData : phrasesData;
+
+              for (const key of Object.keys(schema)) {
+                const dataValue = data[key];
+
+                if (dataValue !== undefined)
+                  (schema[key] as SchemaProperty).value = dataValue;
+              }
+
+              const handleSave = async (inputData: Record<string, any>) => {
+                await fetch(`${apiUrl}/${name}`, {
+                  method: "POST",
+                  body: JSON.stringify(inputData),
+                  headers: { "Content-Type": "application/json" },
+                });
+
+                if (nameCapital === "Config") mutateConfigData(inputData);
+                else if (nameCapital === "Phrases")
+                  mutatePhrasesData(inputData);
+              };
 
               return (
                 <Route path={`/${name}`} key={index}>
@@ -72,13 +80,9 @@ export default function App() {
                     formProps={{ className: "flex flex-col gap-y-4" }}
                     title={property.title}
                     schema={schema}
-                    key={index}
+                    onSave={handleSave}
                   >
-                    <Button
-                      className="float-right"
-                      type="submit"
-                      // icon={<span className="text-red-400">{circleIcon}</span>}
-                    >
+                    <Button className="float-right" type="submit">
                       Save
                     </Button>
                   </SchemaPage>

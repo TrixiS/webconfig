@@ -8,17 +8,17 @@ import {
   RemoveButtonProps,
 } from "./SchemaPage";
 
-// TODO: take property type
 const DictInput = ({
   removeButtonProps,
   appendButtonProps,
   onChange,
+  defaultValue,
 }: DictInputProps) => {
-  const [values, setValues] = React.useState<any[][]>([]);
+  const [values, setValues] = React.useState<any[][]>(
+    defaultValue ? Object.entries(defaultValue) : []
+  );
 
   React.useEffect(() => {
-    if (values.length === 0) return;
-
     const object: Record<string, any> = {};
 
     for (const pair of values) {

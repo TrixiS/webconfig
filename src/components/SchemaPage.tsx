@@ -9,7 +9,7 @@ import {
   UseFormRegister,
   Controller,
 } from "react-hook-form";
-import { removeIcon, plusIcon, arrowRightIcon } from "../icons";
+import { removeIcon, plusIcon } from "../icons";
 import DictInput from "./DictInput";
 
 const plainInputTypes: Record<string, string> = {
@@ -69,8 +69,11 @@ export function ArrayField({
   removeButtonProps,
   ...rest
 }: ArrayFieldProps) {
-  // TODO: grab data from property and push it to the fields
   const { fields, append, remove } = useFieldArray(useFieldArrayProps);
+
+  React.useEffect(() => {
+    if (property.value?.length) append(property.value, { shouldFocus: false });
+  }, []);
 
   return (
     <Field {...rest}>
@@ -108,8 +111,10 @@ export function ObjectField({
             {...field}
             removeButtonProps={removeButtonProps}
             appendButtonProps={appendButtonProps}
+            defaultValue={property.value}
           />
         )}
+        defaultValue={{}}
       />
     </Field>
   );
@@ -132,34 +137,35 @@ export default function SchemaPage({
   schema,
   formProps,
   children,
+  onSave,
   ...rest
 }: SchemaPageProps) {
   const { control, register, handleSubmit } = useForm();
 
-  const handleData = (data: Record<string, any>) => {
-    console.log(data);
-  };
-
-  // TODO1: send request to modify config
-  // TODO2: fill up fields with actual data
-
   return (
     <Page {...rest}>
-      <form onSubmit={handleSubmit(handleData)} {...formProps}>
+      <form onSubmit={handleSubmit(onSave)} {...formProps}>
         {Object.entries(schema).map((entry, index) => {
           const [name, property] = entry;
 
-          if (property.type in plainInputTypes)
+          if (property.type in plainInputTypes) {
+            const plainType = plainInputTypes[property.type];
+
             return (
               <Field title={property.title}>
                 <Input
-                  type={plainInputTypes[property.type]}
+                  type={plainType}
                   placeholder={property.default}
-                  {...register(name, { required: !property.default })}
+                  defaultValue={property.value}
+                  {...register(name, {
+                    required: !property.default,
+                    valueAsNumber: plainType === "number",
+                  })}
                   key={index}
                 />
               </Field>
             );
+          }
 
           return (
             <NestedObjectField
@@ -184,11 +190,12 @@ export default function SchemaPage({
 }
 
 export type SchemaProperty = ConfigProperty & {
-  value?: string;
+  value?: string | any[];
 };
 
 export interface SchemaPageProps extends PageProps {
   schema: Record<string, SchemaProperty>;
+  onSave: (data: Record<string, any>) => any;
   formProps?: Record<string, any>;
 }
 
