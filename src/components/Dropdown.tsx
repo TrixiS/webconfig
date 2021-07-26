@@ -43,6 +43,7 @@ export default function Dropdown({
                 childIndex === children.length - 1 && "rounded-b-lg"
               }`}
               onClick={(e) => closeMenu(e, true)}
+              key={childIndex.toString()}
             >
               {child}
             </li>

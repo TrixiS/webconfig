@@ -6,7 +6,7 @@ import Dropdown from "./components/Dropdown";
 import { Switch, Route } from "react-router-dom";
 import { ConfigSchema } from "./lib/configTypes";
 import { Sidebar, Header, Content, SidebarLink } from "./components/Layout";
-import { logo, configIcon, phrasesIcon } from "./icons";
+import { logo, configIcon, phrasesIcon, circleIcon } from "./icons";
 
 export const apiUrl = "http://localhost:5000";
 
@@ -15,12 +15,21 @@ const pageIcons: Record<string, JSX.Element> = {
   phrases: phrasesIcon,
 };
 
-// Just use spans here
-export enum BotState {
-  starting = "text-yellow-400",
-  running = "text-green-400",
-  stopped = "text-red-400",
+enum BotState {
+  ready = "ready",
+  loading = "loading",
+  stopped = "stopped",
 }
+
+type BotStatus = {
+  status: BotState;
+};
+
+const botStateColors = {
+  ready: "text-green-400",
+  loading: "text-yellow-400",
+  stopped: "text-red-400",
+};
 
 export default function App() {
   const { data: configSchema } = useFetcher<ConfigSchema>(`${apiUrl}/schema`);
@@ -30,21 +39,13 @@ export default function App() {
   const { data: phrasesData, mutate: mutatePhrasesData } = useFetcher<
     Record<string, string>
   >(`${apiUrl}/phrases`);
+  const { data: botStatus } = useFetcher<BotStatus>(`${apiUrl}/bot`);
 
-  // TODO: make loading screen (red logo pulse)
-  // TODO: компонент, который выплевывает импуты при получении объекта из пропов
-  //       и возвращает объект с данными
-  // TODO: add desc to the pages (Config and the desc below)
-  if (!configSchema || !configData || !phrasesData) return <>Loading...</>;
-
+  // TODO: make loading screen (blue logo pulse)
   // TODO: react browser events?
-  // const handleStart
 
-  const startDropdownOptions = [
-    phrasesData.bot_start,
-    phrasesData.bot_reload,
-    phrasesData.bot_kill,
-  ];
+  if (!(configSchema && configData && phrasesData && botStatus))
+    return <>Loading...</>;
 
   return (
     <div className="App flex flex-row w-full h-screen">
@@ -63,13 +64,40 @@ export default function App() {
       <div className="flex flex-col w-10/12 h-full">
         <Header className="shadow z-10 px-2 py-3">
           <Dropdown
-            buttonProps={{ children: phrasesData.bot }}
+            buttonProps={{
+              children: phrasesData.bot,
+              icon: (
+                <span className={botStateColors[botStatus.status]}>
+                  {circleIcon}
+                </span>
+              ),
+            }}
             className="float-right inline-block"
             mirror
           >
-            {startDropdownOptions.map((option) => (
-              <button onClick={() => console.log(option)}>{option}</button>
-            ))}
+            <button
+              onClick={async () =>
+                await fetch(apiUrl + "/bot/start", { method: "POST" })
+              }
+              disabled={botStatus.status == BotState.ready}
+            >
+              {phrasesData.bot_start}
+            </button>
+            <button
+              onClick={async () =>
+                await fetch(apiUrl + "/bot/restart", { method: "POST" })
+              }
+            >
+              {phrasesData.bot_reload}
+            </button>
+            <button
+              onClick={async () =>
+                await fetch(apiUrl + "/bot/stop", { method: "POST" })
+              }
+              disabled={botStatus.status == BotState.stopped}
+            >
+              {phrasesData.bot_kill}
+            </button>
           </Dropdown>
         </Header>
 
@@ -110,7 +138,7 @@ export default function App() {
                     onSave={handleSave}
                   >
                     <Button className="float-right" type="submit">
-                      Save
+                      {phrasesData.save}
                     </Button>
                   </SchemaPage>
                 </Route>
