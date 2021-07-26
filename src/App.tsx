@@ -1,12 +1,12 @@
 import React from "react";
-import Page from "./components/Page";
 import useFetcher from "./lib/useFetcher";
 import SchemaPage, { SchemaProperty } from "./components/SchemaPage";
 import Button from "./components/Button";
+import Dropdown from "./components/Dropdown";
 import { Switch, Route } from "react-router-dom";
 import { ConfigSchema } from "./lib/configTypes";
 import { Sidebar, Header, Content, SidebarLink } from "./components/Layout";
-import { logo, configIcon, phrasesIcon, circleIcon } from "./icons";
+import { logo, configIcon, phrasesIcon } from "./icons";
 
 export const apiUrl = "http://localhost:5000";
 
@@ -14,6 +14,13 @@ const pageIcons: Record<string, JSX.Element> = {
   config: configIcon,
   phrases: phrasesIcon,
 };
+
+// Just use spans here
+export enum BotState {
+  starting = "text-yellow-400",
+  running = "text-green-400",
+  stopped = "text-red-400",
+}
 
 export default function App() {
   const { data: configSchema } = useFetcher<ConfigSchema>(`${apiUrl}/schema`);
@@ -30,6 +37,15 @@ export default function App() {
   // TODO: add desc to the pages (Config and the desc below)
   if (!configSchema || !configData || !phrasesData) return <>Loading...</>;
 
+  // TODO: react browser events?
+  // const handleStart
+
+  const startDropdownOptions = [
+    phrasesData.bot_start,
+    phrasesData.bot_reload,
+    phrasesData.bot_kill,
+  ];
+
   return (
     <div className="App flex flex-row w-full h-screen">
       <Sidebar className="w-2/12 h-screen border-r border-gray-200" icon={logo}>
@@ -45,7 +61,18 @@ export default function App() {
       </Sidebar>
 
       <div className="flex flex-col w-10/12 h-full">
-        <Header className="shadow z-10" />
+        <Header className="shadow z-10 px-2 py-3">
+          <Dropdown
+            buttonProps={{ children: phrasesData.bot }}
+            className="float-right inline-block"
+            mirror
+          >
+            {startDropdownOptions.map((option) => (
+              <button onClick={() => console.log(option)}>{option}</button>
+            ))}
+          </Dropdown>
+        </Header>
+
         <Content>
           <Switch>
             {Object.entries(configSchema.properties).map((entry, index) => {

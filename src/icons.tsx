@@ -115,9 +115,7 @@ export const arrowRightIcon = (
 );
 
 export const circleIcon = (
-  <svg className="h-3 w-3 self-center" viewBox="0 0 8 8" stroke="currentColor">
-    <circle cx="4" cy="4" r="3" fill="currentColor">
-      <circle cx-4 cy-4 />
-    </circle>
+  <svg className="h-2 w-2" viewBox="0 0 8 8" stroke="currentColor">
+    <circle cx="4" cy="4" r="3" fill="currentColor" />
   </svg>
 );

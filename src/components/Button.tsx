@@ -12,12 +12,10 @@ export default function Button({
       {...rest}
     >
       {icon}
-      <span className="text-white text-lg font-medium ">{children}</span>
+      <span className="text-white text-lg font-medium">{children}</span>
     </button>
   );
 }
-
-// TODO: bot enable dropdown (using react-dropdown)
 
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement> {
