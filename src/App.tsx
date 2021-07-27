@@ -22,6 +22,7 @@ enum BotState {
 }
 
 type BotStatus = {
+  id: number;
   status: BotState;
 };
 
@@ -39,10 +40,32 @@ export default function App() {
   const { data: phrasesData, mutate: mutatePhrasesData } = useFetcher<
     Record<string, string>
   >(`${apiUrl}/phrases`);
-  const { data: botStatus } = useFetcher<BotStatus>(`${apiUrl}/bot`);
+  const { data: botStatus, mutate: mutateBotStatus } = useFetcher<BotStatus>(
+    `${apiUrl}/bot`
+  );
 
-  // TODO: make loading screen (blue logo pulse)
-  // TODO: react browser events?
+  // TODO: DropdownItem comp
+
+  React.useEffect(() => {
+    const eventSource = new EventSource(`${apiUrl}/bot/status`);
+
+    eventSource.addEventListener("update", (e) => {
+      const data: BotStatus = JSON.parse((e as MessageEvent).data);
+
+      if (
+        botStatus &&
+        data.status === BotState.stopped &&
+        data.id !== botStatus.id
+      )
+        return;
+
+      mutateBotStatus(data);
+    });
+
+    eventSource.addEventListener("error", () => eventSource.close());
+
+    return () => eventSource.close();
+  }, []);
 
   if (!(configSchema && configData && phrasesData && botStatus))
     return <>Loading...</>;
@@ -79,7 +102,7 @@ export default function App() {
               onClick={async () =>
                 await fetch(apiUrl + "/bot/start", { method: "POST" })
               }
-              disabled={botStatus.status == BotState.ready}
+              disabled={botStatus.status === BotState.ready}
             >
               {phrasesData.bot_start}
             </button>
@@ -94,7 +117,7 @@ export default function App() {
               onClick={async () =>
                 await fetch(apiUrl + "/bot/stop", { method: "POST" })
               }
-              disabled={botStatus.status == BotState.stopped}
+              disabled={botStatus.status === BotState.stopped}
             >
               {phrasesData.bot_kill}
             </button>
