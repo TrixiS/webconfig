@@ -10,17 +10,21 @@ export default function Dropdown({
   const [menuVisible, setMenuVisible] = React.useState<boolean>(false);
   const menuRef = React.useRef<HTMLUListElement>(null);
 
-  const showMenu: React.MouseEventHandler<HTMLButtonElement> = (e) => {
+  React.useEffect(() => {
+    if (menuVisible)
+      return document.addEventListener("click", closeMenu as any);
+
+    document.removeEventListener("click", closeMenu as any);
+  }, [menuVisible]);
+
+  const toggleMenu: React.MouseEventHandler<HTMLButtonElement> = (e) => {
     e.preventDefault();
-    setMenuVisible(true);
-    document.addEventListener("click", closeMenu as any);
+    setMenuVisible((visible) => !visible);
   };
 
   const closeMenu = (e: React.MouseEvent, itemClick: boolean = false) => {
     if (menuRef.current?.contains(e.target as Node) && !itemClick) return;
-
     setMenuVisible(false);
-    document.removeEventListener("click", closeMenu as any);
   };
 
   const transform = mirror ? "scaleX(-1)" : "scaleX(1)";
@@ -28,25 +32,23 @@ export default function Dropdown({
   return (
     <ul {...rest} ref={menuRef} style={{ transform: transform }}>
       <Button
-        onClick={showMenu}
+        onClick={toggleMenu}
         {...buttonProps}
         style={{ transform: transform }}
       />
       {menuVisible && (
         <div
-          className="flex flex-col flex-grow-0 items-start bg-white shadow-lg rounded-b-lg z-50"
+          className="flex flex-col fixed w-full bg-white shadow-md z-50"
           style={{ transform: transform }}
         >
           {children.map((child, childIndex) => (
-            <li
-              className={`w-full py-1 px-2 hover:bg-gray-100 ${
-                childIndex === children.length - 1 && "rounded-b-lg"
-              }`}
+            <div
+              className="w-full h-full"
               onClick={(e) => closeMenu(e, true)}
               key={childIndex.toString()}
             >
               {child}
-            </li>
+            </div>
           ))}
         </div>
       )}
@@ -54,8 +56,29 @@ export default function Dropdown({
   );
 }
 
+export function DropdownItem({
+  className,
+  disabled,
+  ...rest
+}: DropdownItemProps) {
+  const itemClassName = disabled
+    ? "bg-gray-100 cursor-not-allowed opacity-50 pointer-events-hover"
+    : "hover:bg-gray-100 cursor-pointer";
+
+  return (
+    <li
+      className={`w-full h-full text-sm py-1 px-2 ${itemClassName} ${className}`}
+      {...rest}
+    />
+  );
+}
+
 export interface DropdownProps extends React.HTMLAttributes<HTMLUListElement> {
   children: React.ReactChild[];
   buttonProps: ButtonProps;
   mirror?: boolean;
+}
+
+export interface DropdownItemProps extends React.HTMLAttributes<HTMLLIElement> {
+  disabled?: boolean;
 }
