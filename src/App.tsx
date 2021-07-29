@@ -2,7 +2,7 @@ import React from "react";
 import useFetcher from "./lib/useFetcher";
 import SchemaPage, { SchemaProperty } from "./components/SchemaPage";
 import Button from "./components/Button";
-import Dropdown from "./components/Dropdown";
+import Dropdown, { DropdownItem } from "./components/Dropdown";
 import { Switch, Route } from "react-router-dom";
 import { ConfigSchema } from "./lib/configTypes";
 import { Sidebar, Header, Content, SidebarLink } from "./components/Layout";
@@ -44,8 +44,6 @@ export default function App() {
     `${apiUrl}/bot`
   );
 
-  // TODO: DropdownItem comp
-
   React.useEffect(() => {
     const eventSource = new EventSource(`${apiUrl}/bot/status`);
 
@@ -85,8 +83,9 @@ export default function App() {
       </Sidebar>
 
       <div className="flex flex-col w-10/12 h-full">
-        <Header className="shadow z-10 px-2 py-3">
+        <Header className="shadow z-10 px-2 py-3 items-center justify-center md:justify-end">
           <Dropdown
+            className="inline-block"
             buttonProps={{
               children: phrasesData.bot,
               icon: (
@@ -95,32 +94,32 @@ export default function App() {
                 </span>
               ),
             }}
-            className="float-right inline-block"
             mirror
           >
-            <button
+            <DropdownItem
               onClick={async () =>
                 await fetch(apiUrl + "/bot/start", { method: "POST" })
               }
-              disabled={botStatus.status === BotState.ready}
+              disabled={botStatus.status !== BotState.stopped}
             >
               {phrasesData.bot_start}
-            </button>
-            <button
+            </DropdownItem>
+            <DropdownItem
               onClick={async () =>
                 await fetch(apiUrl + "/bot/restart", { method: "POST" })
               }
+              disabled={botStatus.status !== BotState.ready}
             >
               {phrasesData.bot_reload}
-            </button>
-            <button
+            </DropdownItem>
+            <DropdownItem
               onClick={async () =>
                 await fetch(apiUrl + "/bot/stop", { method: "POST" })
               }
-              disabled={botStatus.status === BotState.stopped}
+              disabled={botStatus.status !== BotState.ready}
             >
               {phrasesData.bot_kill}
-            </button>
+            </DropdownItem>
           </Dropdown>
         </Header>
 
