@@ -16,6 +16,7 @@ const plainInputTypes: Record<string, string> = {
   string: "text",
   integer: "number",
   number: "number",
+  boolean: "checkbox",
 };
 
 export function Field({
@@ -155,10 +156,15 @@ export default function SchemaPage({
               <Field title={property.title}>
                 <Input
                   type={plainType}
-                  placeholder={property.default}
-                  defaultValue={property.value}
+                  placeholder={property.default?.toString()}
+                  defaultValue={
+                    plainType === "checkbox"
+                      ? (undefined as any)
+                      : property.value
+                  }
+                  defaultChecked={property.value}
                   {...register(name, {
-                    required: !property.default,
+                    required: !property.default && plainType !== "checkbox",
                     valueAsNumber: plainType === "number",
                   })}
                   key={index}
@@ -190,7 +196,7 @@ export default function SchemaPage({
 }
 
 export type SchemaProperty = ConfigProperty & {
-  value?: string | any[];
+  value?: string | any | any[];
 };
 
 export interface SchemaPageProps extends PageProps {
