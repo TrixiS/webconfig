@@ -52,7 +52,9 @@ export function Header({
   className,
   ...rest
 }: React.HTMLAttributes<HTMLDivElement>) {
-  return <header className={`h-16 w-full ${className}`} {...rest} />;
+  return (
+    <header className={`inline-flex h-16 w-full ${className}`} {...rest} />
+  );
 }
 
 export function Content({
