@@ -12,7 +12,7 @@ export default function Button({
       {...rest}
     >
       {icon}
-      <span className="text-white text-lg font-medium">{children}</span>
+      <span className="text-white text-md font-medium">{children}</span>
     </button>
   );
 }
