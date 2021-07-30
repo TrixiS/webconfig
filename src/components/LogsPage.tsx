@@ -1,10 +1,11 @@
-import { apiUrl } from "../App";
 import useFetcher from "../lib/useFetcher";
-import Page, { PageProps } from "./Page";
 import TextField from "./TextField";
+import Page, { PageProps } from "./Page";
+import { apiUrl } from "../App";
 
 export default function LogsPage({ children, ...rest }: PageProps) {
   const { data: logsData } = useFetcher<Logs>(`${apiUrl}/logs`);
+
   return (
     <Page {...rest}>
       <TextField
