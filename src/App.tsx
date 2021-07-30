@@ -6,7 +6,14 @@ import Dropdown, { DropdownItem } from "./components/Dropdown";
 import { Switch, Route } from "react-router-dom";
 import { ConfigSchema } from "./lib/configTypes";
 import { Sidebar, Header, Content, SidebarLink } from "./components/Layout";
-import { logo, configIcon, phrasesIcon, circleIcon } from "./icons";
+import {
+  logo,
+  configIcon,
+  phrasesIcon,
+  circleIcon,
+  documentIcon,
+} from "./icons";
+import LogsPage from "./components/LogsPage";
 
 export const apiUrl = "http://localhost:5000";
 
@@ -80,6 +87,9 @@ export default function App() {
             </SidebarLink>
           );
         })}
+        <SidebarLink to="/logs" icon={documentIcon}>
+          {phrasesData.logs}
+        </SidebarLink>
       </Sidebar>
 
       <div className="flex flex-col w-10/12 h-full">
@@ -166,6 +176,9 @@ export default function App() {
                 </Route>
               );
             })}
+            <Route path="/logs">
+              <LogsPage title={phrasesData.logs} />
+            </Route>
           </Switch>
         </Content>
       </div>
