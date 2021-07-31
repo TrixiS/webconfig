@@ -1,7 +1,9 @@
 import React from "react";
 import useFetcher from "./lib/useFetcher";
-import SchemaPage, { SchemaProperty } from "./components/SchemaPage";
 import Button from "./components/Button";
+import LogsPage from "./components/LogsPage";
+import LoadingScreen from "./components/LoadingScreen";
+import SchemaPage, { SchemaProperty } from "./components/SchemaPage";
 import Dropdown, { DropdownItem } from "./components/Dropdown";
 import { Switch, Route } from "react-router-dom";
 import { ConfigSchema } from "./lib/configTypes";
@@ -13,7 +15,6 @@ import {
   circleIcon,
   documentIcon,
 } from "./icons";
-import LogsPage from "./components/LogsPage";
 
 export const apiUrl = "http://localhost:5000";
 
@@ -73,7 +74,7 @@ export default function App() {
   }, []);
 
   if (!(configSchema && configData && phrasesData && botStatus))
-    return <>Loading...</>;
+    return <LoadingScreen />;
 
   return (
     <div className="App flex flex-row w-full h-screen">
