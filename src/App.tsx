@@ -16,7 +16,7 @@ import {
   documentIcon,
 } from "./icons";
 
-export const apiUrl = "http://localhost:5000";
+export const apiUrl = "http://localhost:5000/api";
 
 const pageIcons: Record<string, JSX.Element> = {
   config: configIcon,
@@ -57,14 +57,7 @@ export default function App() {
 
     eventSource.addEventListener("update", (e) => {
       const data: BotStatus = JSON.parse((e as MessageEvent).data);
-
-      if (
-        botStatus &&
-        data.status === BotState.stopped &&
-        data.id !== botStatus.id
-      )
-        return;
-
+      if (botStatus?.id !== data.id && data.status === BotState.stopped) return;
       mutateBotStatus(data);
     });
 
