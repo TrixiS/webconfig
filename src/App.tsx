@@ -143,11 +143,22 @@ export default function App() {
               }
 
               const handleSave = async (inputData: Record<string, any>) => {
-                await fetch(`${apiUrl}/${name}`, {
+                const r = await fetch(`${apiUrl}/${name}`, {
                   method: "POST",
                   body: JSON.stringify(inputData),
                   headers: { "Content-Type": "application/json" },
                 });
+
+                if (r.status === 422) {
+                  const json = await r.json();
+                  const errorMessage = json.detail[0]?.msg;
+
+                  return alert(
+                    errorMessage
+                      ? phrasesData.config_error_alert + `: ${errorMessage}`
+                      : phrasesData.config_error_alert
+                  );
+                }
 
                 if (nameCapital === "Config") mutateConfigData(inputData);
                 else if (nameCapital === "Phrases")
